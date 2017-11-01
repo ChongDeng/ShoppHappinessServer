@@ -12,7 +12,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER='upload'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 #将上传文件限制为最大 16 MB 。 如果请求传输一个更大的文件， Flask 会抛出一个RequestEntityTooLarge异常
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 app_dir = os.path.abspath(os.path.dirname(__file__))
 ALLOWED_EXTENSIONS = set(['txt','png','jpg','xls','JPG','PNG','xlsx','gif','GIF'])
 
@@ -71,6 +71,29 @@ def UploadMerchandise():
     return jsonify({"errno": 0, "msg": "upload success"})
 
 
+@app.route('/v1/UploadMerchandiseInfo',methods=['POST'],strict_slashes=False)
+def UploadMerchandiseInfo():
+    for key in request.args.keys():
+        print(key, " : ", request.args.get(key))
+
+    upload_dir = os.path.join(app_dir, app.config['UPLOAD_FOLDER'])
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    uploaded_files = request.files.getlist("dc_file[]")
+    try:
+        for uploaded_file in uploaded_files:
+            if uploaded_file and allowed_file(uploaded_file.filename):  # 判断是否是允许上传的文件类型
+                fname = secure_filename(uploaded_file.filename)
+                print('file name is %s' % fname)
+                uploaded_file.save(os.path.join(upload_dir, fname))  #保存文件到upload目录
+            else:
+                return jsonify({"errno": 1, "msg": "upload failure"})
+    except IOError:
+        return jsonify({"errno":1,"msg":"upload failure"})
+
+    return jsonify({"errno": 0, "msg": "upload success"})
+
+
 # ============================ below functions are just for testing =======================
 @app.route('/uploadJson',methods=['POST'],strict_slashes=False)
 def api_uploadJson():
@@ -84,6 +107,30 @@ def api_uploadJson():
     return jsonify({"errno": 0, "msg": "upload success"})
 
 
+
+
+
+@app.route('/api/upload4',methods=['POST'],strict_slashes=False)
+def api_upload4():
+    for key in request.args.keys():
+        print(key, " : ", request.args.get(key))
+
+    upload_dir = os.path.join(app_dir, app.config['UPLOAD_FOLDER'])
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    uploaded_files = request.files.getlist("dc_file[]")
+    try:
+        for uploaded_file in uploaded_files:
+            if uploaded_file and allowed_file(uploaded_file.filename):  # 判断是否是允许上传的文件类型
+                fname = secure_filename(uploaded_file.filename)
+                print('file name is %s' % fname)
+                uploaded_file.save(os.path.join(upload_dir, fname))  #保存文件到upload目录
+            else:
+                return jsonify({"errno": 1, "msg": "upload failure"})
+    except IOError:
+        return jsonify({"errno":1,"msg":"upload failure"})
+
+    return jsonify({"errno": 0, "msg": "upload success"})
 
 
 @app.route('/api/upload3',methods=['POST'],strict_slashes=False)
